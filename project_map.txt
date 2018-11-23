@@ -1,0 +1,22 @@
+-----Gobang\
+  |
+  |-----dataset\
+  |  |
+  |  |-----humanset\
+  |  |
+  |  |-----autoset\
+  |
+  |-----models\
+  |
+  |-----lib\
+  |
+  |-----model\
+  |  |
+  |  |-----train.py
+  |  |
+  |  |-----eval.py
+  |  |
+  |  |-----test.py
+  |
+  |-----DA.cpp
+ 
