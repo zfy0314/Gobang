@@ -55,6 +55,10 @@ def zfy_max(array):
             if array[i][j] > mmax: x, y, mmax = i, j, array[i][j]
     return [x, y, mmax]
 
+def zfy_timer(mode):
+    if 'reset' == mode: return time()
+    else: return time() - mode
+
 #--functions-------------------
 def txt_read(FILE):
     with open(FILE, 'r') as fin:
@@ -78,13 +82,17 @@ def dataset_write(FILE, BOARDS):
                         temp[i+l][j+k] = brd[l][k]
                 for l in [0, 1, 2, 3]:
                     data_write(FILE, zfy_rotate(temp, l))
-    print('{}: {} finished.'.format(int(time()), FILE))
+    #print('{}: {} finished.'.format(int(time()), FILE))
     return None
     
 #--main------------------------
 def slice(PATH):
     dirs = listdir(PATH)
-    for x in dirs: dataset_write(DATASET_FILE, txt_read(PATH + x))
+    for x in dirs: 
+        t = zfy_timer('reset')
+        print('starting {} ..'.format(x))
+        dataset_write(DATASET_FILE, txt_read(PATH + x))
+        print('finished preparing {} used {} sec.'.format(x, zfy_timer(t)))
     print('done preparing human dataset')
 
 def main(argv=None):

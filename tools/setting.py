@@ -6,7 +6,7 @@
 #--paths & files---------------
 PATH_TO_RAW_DATA = 'data_raw/'
 PATH_TO_MODELS = 'NN/models'
-PATH_TO_HUMAN_DATASET = 'dataset/data_human.txt'
+PATH_TO_DATASET = 'dataset/'
 
 #--game related----------------
 BOARD_SIZE = 19
