@@ -62,7 +62,7 @@ def txt_read(FILE):
     with open(FILE, 'r') as fin:
         raw = fin.read()
     data = [x.replace('\r', '') for x in raw.split('\n') if not '' == x]
-    board_u = [[int(x) for x in data[i] if not ' ' == x] 
+    board_u = [[int(x) for x in data[i].split(' ') if not ' ' == x] 
                for i in range(len(data))]
     step_total = zfy_max(board_u)[2]
     result = [board_min(board_u, 2 * i + 1) 
@@ -80,6 +80,7 @@ def dataset_write(FILE, BOARDS):
                         temp[i+l][j+k] = brd[l][k]
                 for l in [0, 1, 2, 3]:
                     data_write(FILE, zfy_rotate(temp, l))
+    print('{}: {} finished.'.format(int(time()), FILE))
     return None
     
 #--main------------------------
