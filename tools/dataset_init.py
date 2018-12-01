@@ -1,16 +1,14 @@
 #------------------------------
-#convert chess board to data slice
-#written by zfy 11-30-2018
+# convert chess board to data slice
+# written by zfy 11-30-2018
 #------------------------------
 
 #--imports---------------------
 from os import listdir
 from time import time
+from setting import *
 
-#--global variables------------
-PATH_TO_RAW_DATA = 'data_raw/'
-DATASET_FILE = 'dataset/data_human.txt'
-BOARD_SIZE = 19
+DATASET_FILE = PATH_TO_HUMAN_DATASET
 
 #--helper functions------------
 def num_threshold(num, thres):
