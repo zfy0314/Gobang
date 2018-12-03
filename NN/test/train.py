@@ -18,7 +18,7 @@ REGULIZATION_RATE = 0.0001
 TRAINING_STEPS = 30000
 MOVING_AVERGE_DECAY = 0.99
 MODEL_SAVE_PATH = 'models/'
-MODEL_NAME = 'modelckpt'
+MODEL_NAME = 'model.ckpt'
 
 #--trian-----------------------
 def train(mnist):
