@@ -5,10 +5,10 @@ from random import randint
 from os import system
 #from draw import acc_draw
 
-HLAYERS = [100, 100]
+HLAYERS = [512, 512, 512, 512, 512]
 BATCH_SIZE_MIN = 20
-BATCH_RATIO = 0.015 
-TRAINING_STEPS = 10000
+BATCH_RATIO = 0.01 
+TRAINING_STEPS = 1000000
 TRAINSET_RATIO = 0.8
 
 LEARNING_RATE_BASE = 0.003
@@ -17,8 +17,7 @@ REGULARIZATION_RATE = 0.0001
 MOVING_AVERAGE_DECAY = 0.99
 
 FILE = 'testdata.in'
-INDEX = [0, 1]
-NAME = 'test-{mode}-{t}'.format(mode=INDEX, t=time())
+NAME = 'BPtest-{t}'.format(t=time())
 
 def get_data(fil, index):
     with open(fil, "r") as f:
@@ -129,17 +128,17 @@ def zfy_bp(dataset, name):
 
             start = (i * BATCH_SIZE) % int(DATA_NUM*TRAINSET_RATIO)
             end = min(start+BATCH_SIZE, int(DATA_NUM*TRAINSET_RATIO))
+            print()
             sess.run(train_op, feed_dict={x: [a[0] for a in trainset[start:end]], y_: [a[1] for a in trainset[start:end]]})
             if 0 == i % 1000:
-                saver.save(sess, "{name}/{name}-{stp}".format(name=name, stp=i, t=int(time())))
-            with open("{name}/{name}.acc".format(name=name), "a+") as f:
-                f.write("{acc}\n".format(stp=i, t=int(time()), acc=validate_acc))
+                #saver.save(sess, "{name}/{name}-{stp}".format(name=name, stp=i, t=int(time())))
+            #with open("{name}/{name}.acc".format(name=name), "a+") as f:
+            #    f.write("{acc}\n".format(stp=i, t=int(time()), acc=validate_acc))
             
 def main(argv=None):
-    for i in INDEX:
         #system('mkdir test-{ind}-{t}'.format(ind=i, t=time()))
-        name = 'test-{mode}-{t}'.format(mode=i, t=time())
-        zfy_bp(get_data(FILE, i), name)
+    name = 'test-{mode}-{t}'.format(mode=i, t=time())
+    zfy_bp(get_data(FILE, i), name)
     system('python {}'.format('draw.py'))
 
 if __name__ == '__main__':

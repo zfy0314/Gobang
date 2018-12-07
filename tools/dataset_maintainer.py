@@ -24,9 +24,10 @@ def zfy_txt2data(FILE):
         result[1][eval(temp[-1].replace(';', ''))] = 1
         sequence = [eval(y) for y in temp[0].split(' ') if not ' ' == y]
         winner = int(len(sequence) & 1)
-        print(len(sequence))
         for i in range(len(sequence)):
             result[0][sequence[i]] = 1 + int((i & 1) == winner)
+        result[0] = tuple(result[0])
+        result[1] = tuple(result[1])
         data.append(result)
     return data
 
@@ -42,16 +43,18 @@ def zfy_random(array):
 
 #--main------------------------
 def get_set(set_name):
-    raw = []
-    if FILE_NN_DATASET in listdir(PATH_TO_DATASET):
-        with open(PATH_TO_DATASET + FILE_NN_DATASET, 'r') as fin: raw = fin.read().split('\n')
-    if len(raw) < DATA_MIN:
-        with open(PATH_TO_DATASET + FILE_HUMAN_DATASET) as fin: raw = raw + fin.read().split('\n')
-    raw = zfy_random(raw)
-    with open(PATH_TO_DATASET + FILE_TRAINSET, 'w') as fout:
-        for x in raw[:int(len(raw) * TRAINSET_RATIO)]:  fout.write(x + '\n')
-    with open(PATH_TO_DATASET + FILE_VALIDATIONSET, 'w') as fout:
-        for x in raw[int(len(raw) * TRAINSET_RATIO):]: fout.write(x + '\n')
+    if None == set_name:
+        raw = []
+        if FILE_NN_DATASET in listdir(PATH_TO_DATASET):
+            with open(PATH_TO_DATASET + FILE_NN_DATASET, 'r') as fin: raw = fin.read().split('\n')
+        if len(raw) < DATA_MIN:
+            with open(PATH_TO_DATASET + FILE_HUMAN_DATASET) as fin: raw = raw + fin.read().split('\n')
+        raw = zfy_random(raw)
+        with open(PATH_TO_DATASET + FILE_TRAINSET, 'w') as fout:
+            for x in raw[:int(len(raw) * TRAINSET_RATIO)]:  fout.write(x + '\n')
+        with open(PATH_TO_DATASET + FILE_VALIDATIONSET, 'w') as fout:
+            for x in raw[int(len(raw) * TRAINSET_RATIO):]: fout.write(x + '\n')
+        return None
     if 'train' == set_name: return zfy_txt2data(PATH_TO_DATASET + FILE_TRAINSET)
     if 'validate' == set_name: return zfy_txt2data(PATH_TO_DATASET + FILE_VALIDATIONSET)
     return None
