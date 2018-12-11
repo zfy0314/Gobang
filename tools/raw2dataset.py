@@ -9,6 +9,7 @@ from os import listdir
 from os import system
 from time import time
 from setting import *
+#from dataset_maintainer import get_set
 
 #--helper functions------------
 def zfy_extent(sequence, status):
@@ -57,7 +58,7 @@ def zfy_findboard(board, step):
 def zfy_readtxt(FILE):
     with open(FILE, 'r') as fin: raw = fin.read()
     data = [x.replace('\r', '') for x in raw.split('\n') if not '' == x]
-    board_in = [[int(x) for x in data[i].split(' ') if not ' ' == x] 
+    board_in = [[int(x) for x in data[i].split(' ') if (not ' ' == x) and (not '' == x)] 
                 for i in range(len(data))]
     return board_in
 
@@ -131,6 +132,7 @@ def test():
 
 def main(argv = None):
     dataset_init()
+    #get_set(None)
     #test()
 
 if __name__ == '__main__':

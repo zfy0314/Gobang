@@ -124,19 +124,19 @@ def zfy_bp(dataset, name):
 
         for i in range(TRAINING_STEPS):
             validate_acc = sess.run(accuracy, feed_dict=test_feed)
-            print("after {num} training steps, validation accuracy using average model is {acc}".format(num=i, acc=validate_acc))
+            #print("after {num} training steps, validation accuracy using average model is {acc}".format(num=i, acc=validate_acc))
 
             start = (i * BATCH_SIZE) % int(DATA_NUM*TRAINSET_RATIO)
             end = min(start+BATCH_SIZE, int(DATA_NUM*TRAINSET_RATIO))
-            print()
             sess.run(train_op, feed_dict={x: [a[0] for a in trainset[start:end]], y_: [a[1] for a in trainset[start:end]]})
             if 0 == i % 1000:
-                #saver.save(sess, "{name}/{name}-{stp}".format(name=name, stp=i, t=int(time())))
-            #with open("{name}/{name}.acc".format(name=name), "a+") as f:
-            #    f.write("{acc}\n".format(stp=i, t=int(time()), acc=validate_acc))
+                saver.save(sess, "{name}/{name}-{stp}".format(name=name, stp=i, t=int(time())))
+                print("after {num} training steps, validation accuracy using average model is {acc}".format(num=i, acc=validate_acc))
+                with open("{name}/{name}.acc".format(name=name), "a+") as f:
+                    f.write("{acc}\n".format(stp=i, t=int(time()), acc=validate_acc))
             
 def main(argv=None):
-        #system('mkdir test-{ind}-{t}'.format(ind=i, t=time()))
+    system('mkdir test-{ind}-{t}'.format(ind=i, t=time()))
     name = 'test-{mode}-{t}'.format(mode=i, t=time())
     zfy_bp(get_data(FILE, i), name)
     system('python {}'.format('draw.py'))

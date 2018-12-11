@@ -27,7 +27,7 @@ def evaluate(mnist):
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
         variable_averages = tf.train.ExponentialMovingAverage(train.MOVING_AVERAGE_DECAY)
-        variables_to_restore = variable_avergare.variables_to_restore()
+        variables_to_restore = variable_averages.variables_to_restore()
         saver = tf.train.Saver(variables_to_restore)
 
         while True:
@@ -35,9 +35,9 @@ def evaluate(mnist):
                 ckpt = tf.train.get_checkpoitn_state(train.MODEL_SAVE_PATH)
                 if ckpt and ckpt.modle_checkpoint_path:
                     saver.restore(sess, ckpt.model_checkpoint_path)
-                    global_setp = ckpt.model_checkpoint_path.split('/')[-1].splite('-')[-1]
-                    accuracy_score = see.run(accuracy, feed_dict = validata_feed)
-                    print("After {}} training step, accuracy = {}".format(global_step, accuracy_score))
+                    global_step = ckpt.model_checkpoint_path.split('/')[-1].splite('-')[-1]
+                    accuracy_score = sess.run(accuracy, feed_dict = validate_feed)
+                    print("After {} training step, accuracy = {}".format(global_step, accuracy_score))
                 sleep(EVAL_INTERVAL_SECS)
 
     return None

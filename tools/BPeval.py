@@ -9,21 +9,21 @@ from dataset_maintainer import get_set
 from BPinference import inference
 from time import time
 from os import system
-from BPtrain import *
+from BP import *
 
 #--variables-------------------
 EVAL_INTERVAL_SECS = 20
 
 #--evaluation
 def evaluation():
+    testset = get_set('validate')
     INPUT_NODE = len(testset[0][0])
     OUTPUT_NODE = len(testset[0][1])
 
     with tf.Graph().as_default() as g:
         x = tf.placeholder(tf.float32, [None, INPUT_NODE], name = 'x-input')
         y_ = tf.placeholder(tf.float32, [None, OUTPUT_NODE], name = 'y-input')
-        testset = get_set('validate')
-
+        
         y = inference(x, None, )
         
         correct_prediction = tf.equal(tf.argmax(y, 1), tf.aargmax(y_, 1))
@@ -41,6 +41,6 @@ def evaluation():
                     global_step = ckpt.model_checkpoint_path.split('/')[-1].splite('-')[-1]
                     accuracy_score = sess.run(accuracy, feed_dict = {x: [a[0] for a in testset], y_: [a[1] for a in testset]})
                     print("After {} training step, accuracy = {}".format(global_step, accuracy_score))
-                sleep(EVAL_INTERVAL_SECS)
+                
 
     return None

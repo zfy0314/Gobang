@@ -64,8 +64,8 @@ def test():
 
 def main(argv = None):
     t = zfy_timer('reset')
-    #get_set(None)
-    test()
+    get_set(None)
+    #test()
     print('done after {} seconds'.format(zfy_timer(t)))
 
 if __name__ == '__main__':

@@ -15,7 +15,7 @@ from raw2dataset import zfy_expand
 def zfy_isboard(board):
     for i in range(len(board)):
         if not len(board[i]) == len(board[0]):
-            print('corrupt!, error code 0: not a board!')
+            print('corrupt!, error code 0: not a board! wrong row {}'.format(i + 1))
             return False
     return True
 
