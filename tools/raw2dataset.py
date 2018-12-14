@@ -131,7 +131,9 @@ def test():
     '''
 
 def main(argv = None):
+    time_total =zfy_timer('reset')
     dataset_init()
+    print('total time used: {} seconds'.format(zfy_timer(time_total)))
     #get_set(None)
     #test()
 

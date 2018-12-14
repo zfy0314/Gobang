@@ -40,7 +40,7 @@ def check():
                 print('{} check pass'.format(x))
                 passed.append(x)
     print('{} passed'.format(passed))
-    return None
+    return passed
 
 def main(argv = None):
     check()

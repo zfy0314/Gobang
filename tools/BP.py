@@ -16,15 +16,15 @@ from raw2dataset import zfy_timer
 from setting import *
 
 #--global variables------------
-HLAYERS = [512, 512, 512, 512, 512]
+HLAYERS = [512, 512, 512, 512, 512, 512]
 BATCH_SIZE_MIN = 50
-BATCH_RATIO = 0.001 
-TRAINING_STEPS = 10000
+BATCH_RATIO = 0.002
+TRAINING_STEPS = 100000
 TRAINSET_RATIO = 0.8
-CHECKPOINT_INTERVAL = 1000
+CHECKPOINT_INTERVAL = 100
 
-LEARNING_RATE_BASE = 1.8
-LEARNING_RATE_DECAY =  0.8
+LEARNING_RATE_BASE = 2.6
+LEARNING_RATE_DECAY =  0.997
 REGULARIZATION_RATE = 0.0001
 MOVING_AVERAGE_DECAY = 0.99
 
@@ -107,21 +107,26 @@ def train(name):
                 with open('models/{name}/{name}.acc'.format(name=name), 'a+') as fout:
                     fout.write('{}: {}\n'.format(i, validate_acc))
                 print('saving {} steps model, accuracy = {}, time used = {}'.format(i, validate_acc, zfy_timer(timer)))
-                saver.save(sess, "models/{name}/{name}.ckpt-{stp}".format(name=name, stp=i))
+                #saver.save(sess, "models/{name}/{name}.ckpt-{stp}".format(name=name, stp=i))
                 timer = zfy_timer('reset')    
-            
+        
+
+        saver.save(sess, "models/{name}/{name}.ckpt-{stp}".format(name=name, stp=TRAINING_STEPS))
+
         while True:
             board = [0 for i in range(BOARD_SIZE ** 2)]
             next_step = 0
+            steps = []
             while True:
                 bp_result = sess.run(y, feed_dict={x:[tuple(board)]}).tolist()
                 
-                print(bp_result)
+                #print(bp_result)
                 board[bp_result[0].index(max(bp_result[0]))] = 1
                 for i in range(BOARD_SIZE):
                     for j in range(BOARD_SIZE):
                         print(board[i * 19 + j], end=' ')
                     print('')
+                print(bp_result[0].index(max(bp_result[0])))
                 next_step = int(input('next step: '))
                 if next_step > 360: break
                 board[next_step] = 2
@@ -157,12 +162,13 @@ def predict(input_tensor):
             while next_step <= 360:
                 bp_result = sess.run(y, feed_dict={x:[tuple(board)]}).tolist()
                 
-                print(bp_result)
+                #print(bp_result)
                 board[bp_result[0].index(max(bp_result[0]))] = 1
                 for i in range(BOARD_SIZE):
                     for j in range(BOARD_SIZE):
                         print(board[i * 19 + j], end=' ')
                     print('')
+                print(bp_result[0].index(max(bp_result[0])))
                 next_step = int(input('next step: '))
                 board[next_step] = 2
     return None
