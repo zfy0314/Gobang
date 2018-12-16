@@ -47,6 +47,8 @@ def get_set(set_name):
         raw = []
         if FILE_NN_DATASET in listdir(PATH_TO_DATASET):
             with open(PATH_TO_DATASET + FILE_NN_DATASET, 'r') as fin: raw = fin.read().split('\n')
+        if FILE_INTERATION_DATASET in listdir(PATH_TO_DATASET):
+            with open(PATH_TO_DATASET + FILE_INTERATION_DATASET, 'r') as fin: raw = raw + fin.read().split('\n')
         if len(raw) < DATA_MIN:
             with open(PATH_TO_DATASET + FILE_HUMAN_DATASET) as fin: raw = raw + fin.read().split('\n')
         raw = zfy_random(raw)

@@ -5,17 +5,19 @@
 
 #--paths & files---------------
 PATH_TO_RAW_DATA = 'data_raw/'
-PATH_TO_MODELS = 'NN/models'
+PATH_TO_MODELS = 'models/'
 PATH_TO_DATASET = 'dataset/'
 
 FILE_HUMAN_DATASET = 'human.data'
 FILE_NN_DATASET = 'nn.data'
+FILE_INTERATION_DATASET = 'interact.data'
 FILE_TRAINSET = 'train.data'
 FILE_VALIDATIONSET = 'validation.data'
 
 #--game related----------------
 BOARD_SIZE = 19
 
-#--CNN related-----------------
-TRAINSET_RATIO = 0.9
+#--NN related------------------
+NETWORK_TYPE = 'BP'
+TRAINSET_RATIO = 0.8
 DATA_MIN = 1 << 20

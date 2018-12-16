@@ -13,18 +13,24 @@ from time import sleep
 from os import system
 from os import listdir
 from raw2dataset import zfy_timer
+from raw2dataset import autowrite
+from raw2dataset import zfy_xy2linear
+from raw2dataset import zfy_linear2xy
+from raw2dataset import zfy_sequence2board
+from raw2dataset import zfy_expand
+from raw2dataset import zfy_board2sequence
 from setting import *
 
 #--global variables------------
 HLAYERS = [512, 512, 512, 512, 512, 512]
 BATCH_SIZE_MIN = 50
 BATCH_RATIO = 0.002
-TRAINING_STEPS = 100000
+TRAINING_STEPS = 20000
 TRAINSET_RATIO = 0.8
 CHECKPOINT_INTERVAL = 100
 
-LEARNING_RATE_BASE = 2.6
-LEARNING_RATE_DECAY =  0.997
+LEARNING_RATE_BASE = 1.8
+LEARNING_RATE_DECAY =  0.993
 REGULARIZATION_RATE = 0.0001
 MOVING_AVERAGE_DECAY = 0.99
 
@@ -114,6 +120,7 @@ def train(name):
         saver.save(sess, "models/{name}/{name}.ckpt-{stp}".format(name=name, stp=TRAINING_STEPS))
 
         while True:
+            print('new game started')
             board = [0 for i in range(BOARD_SIZE ** 2)]
             next_step = 0
             steps = []
@@ -122,60 +129,47 @@ def train(name):
                 
                 #print(bp_result)
                 board[bp_result[0].index(max(bp_result[0]))] = 1
+                steps.append(zfy_linear2xy(bp_result[0].index(max(bp_result[0]))))
                 for i in range(BOARD_SIZE):
                     for j in range(BOARD_SIZE):
                         print(board[i * 19 + j], end=' ')
                     print('')
-                print(bp_result[0].index(max(bp_result[0])))
-                next_step = int(input('next step: '))
-                if next_step > 360: break
-                board[next_step] = 2
-        
-
-
+                print(steps[-1])
+                next_step = [int(input('next_step_x: ')), int(input('next_step_y: '))]
+                if zfy_xy2linear(next_step) > 360: 
+                    del steps[-1]
+                    break
+                steps.append(next_step)
+                board[zfy_xy2linear(next_step)] = 2
+            x = [i[0] for i in steps]
+            y = [i[1] for i in steps]
+            temp = zfy_sequence2board(steps)[min(x):max(x)+1][min(y):max(y)+1]
+            boards = zfy_expand(temp)
+            for brd in boards: autowrite(zfy_board2sequence(brd), 'interaction')
+            print('saved into dataset')
     return None
 
-def predict(input_tensor):
-    INPUT_NODE = len(input_tensor)
-    OUTPUT_NODE = INPUT_NODE
-    LAYER = [INPUT_NODE] + HLAYERS + [OUTPUT_NODE]
+def get_result(name, input_tensor):
+
+    x = tf.placeholder(tf.float32, [None, len(input_tensor)], name='x-input')
+    y_ = tf.placeholder(tf.float32, [None, len(input_tensor)], name='y-input')
+
     weights  = [[], []]
     for i in range(len(LAYER) - 1):
          weights[0].append(tf.Variable(tf.truncated_normal([LAYER[i], LAYER[i+1]], stddev=0.1)))
          weights[1].append(tf.Variable(tf.constant(1.0, shape=[LAYER[i+1]])))
-    x = tf.placeholder(tf.float32, [None, INPUT_NODE], name='x-input')
-    y = inference(x, None, weights)
-    input_dict = {x: [input_tensor]}
-    saver = tf.train.Saver()
-
-    ckpt_list = listdir('models/')
-    ckpt_list.sort()
-    ckpt_latest = ckpt_list[-1]
-    print('using model: {}'.format(ckpt_latest))
     
+    y = inference(x, None, weights)
+    result = tf.argmax(y, 1)
+
+    saver = tf.train.Saver(varaibles_to_restore)
     with tf.Session() as sess:
-        saver.restore(sess, 'models/' + ckpt_latest + '/' + ckpt_latest + '-2000')
-        print (sess.run(y, feed_dict=input_dict))
-        while True:
-            board = [0 for i in range(BOARD_SIZE ** 2)]
-            next_step = 0
-            while next_step <= 360:
-                bp_result = sess.run(y, feed_dict={x:[tuple(board)]}).tolist()
-                
-                #print(bp_result)
-                board[bp_result[0].index(max(bp_result[0]))] = 1
-                for i in range(BOARD_SIZE):
-                    for j in range(BOARD_SIZE):
-                        print(board[i * 19 + j], end=' ')
-                    print('')
-                print(bp_result[0].index(max(bp_result[0])))
-                next_step = int(input('next step: '))
-                board[next_step] = 2
-    return None
+        ckpt = tf.train.get_checkpoint_state("models/{name}/".format(name = name))
+        saver.restore(sess, ckpt.model_checkpoint_path)
 
 def main(argv = None):
     
-    timestamp = str(int(time()))
+    timestamp = "BP" + str(int(time()))
     system('mkdir models/{}'.format(timestamp))
     with open('models/{name}/{name}-spec.txt'.format(name=timestamp), 'w') as fout:
         fout.write('HLAYERS = {}\nBATCH_SIZE_MIN = {}\nBATCH_RATIO = {}\nTRAINING_STEPS = {}\nTRAINSET_RATIO = {}\nLEARNING_RATE_BASE = {}\nLEARNING_RATE_DECAY =  {}\nREGULARIZATION_RATE = {}\nMOVING_AVERAGE_DECAY = {}'.format(
@@ -184,11 +178,6 @@ def main(argv = None):
     train(timestamp)
     
     
-    
-
-    
-    #predict(tuple([float(x) for x in get_set('validate')[0][0]]))
-    return None
 
 if __name__ == '__main__':
     main()

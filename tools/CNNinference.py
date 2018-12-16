@@ -71,6 +71,8 @@ def inference(input_tensor, regularizer):
                 result = tf.nn.conv2d(output, conv_weights, strides = conv_stride, padding = 'VALID')
                 output = tf.nn.relu(tf.nn.bias_add(result, conv_biases))
         if 'fc' == layer_type:
+            print(output)
+            with tf.Session() as sess: print(sess.run(output))
             shape = output.get_shape().as_list()
             nodes = shape[1] * shape[2] * shape[3]
             reshaped = tf.reshape(output, [shape[0], nodes])

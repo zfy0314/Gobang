@@ -12,15 +12,6 @@ from setting import *
 #from dataset_maintainer import get_set
 
 #--helper functions------------
-def zfy_extent(sequence, status):
-    if 0 == status: return sequence
-    if 1 == status: return [[BOARD_SIZE - 1 - x[0], x[1]] for x in sequence]
-    if 2 == status: return [[x[0], BOARD_SIZE - 1 - x[1]] for x in sequence]
-    if 3 == status: return [[BOARD_SIZE - 1 - x[0], BOARD_SIZE - 1 - x[1]] for x in sequence]
-    if 4 == status: return [[x[1], x[0]] for x in sequence]
-    if 5 == status: return [[x[1], BOARD_SIZE - 1 - x[0]] for x in sequence]
-    if 6 == status: return [[BOARD_SIZE - 1 - x[1], x[0]] for x in sequence]
-    if 7 == status: return [[BOARD_SIZE - 1 - x[1], BOARD_SIZE - 1 - x[0]] for x in sequence]
 
 def zfy_expand(board_mini):
     boards = []
@@ -33,6 +24,16 @@ def zfy_expand(board_mini):
                     temp[i+l][j+k] = board_mini[l][k]
             boards.append(temp)
     return boards
+    
+def zfy_extent(sequence, status):
+    if 0 == status: return sequence
+    if 1 == status: return [[BOARD_SIZE - 1 - x[0], x[1]] for x in sequence]
+    if 2 == status: return [[x[0], BOARD_SIZE - 1 - x[1]] for x in sequence]
+    if 3 == status: return [[BOARD_SIZE - 1 - x[0], BOARD_SIZE - 1 - x[1]] for x in sequence]
+    if 4 == status: return [[x[1], x[0]] for x in sequence]
+    if 5 == status: return [[x[1], BOARD_SIZE - 1 - x[0]] for x in sequence]
+    if 6 == status: return [[BOARD_SIZE - 1 - x[1], x[0]] for x in sequence]
+    if 7 == status: return [[BOARD_SIZE - 1 - x[1], BOARD_SIZE - 1 - x[0]] for x in sequence]
 
 def zfy_sequence2board(sequence):
     board = [[0 for j in range(BOARD_SIZE)] for i in range(BOARD_SIZE)]
@@ -65,6 +66,9 @@ def zfy_readtxt(FILE):
 def zfy_xy2linear(position):
     return position[0] * BOARD_SIZE + position[1]
 
+def zfy_linear2xy(index):
+    return [index // BOARD_SIZE, index % BOARD_SIZE]
+
 def zfy_datasetwrite(FILE, sequence):
     if False == sequence: return None
     winner = int(len(sequence) & 1)
@@ -90,6 +94,16 @@ def zfy_print(board):
     return None
 
 #--main------------------------
+
+def autowrite(sequence, mode):
+    if 'interaction' == mode:
+        target = PATH_TO_DATASET + FILE_INTERATION_DATASET
+    if 'auto' == mode:
+        target = PATH_TO_DATASET + FILE_NN_DATASET
+    for i in range(8): zfy_datasetwrite(target, zfy_extent(sequence, i))
+    return None
+    
+
 def dataset_init():
     if FILE_HUMAN_DATASET in listdir(PATH_TO_DATASET): system('rm ' + PATH_TO_DATASET + FILE_HUMAN_DATASET)
     dirs = listdir(PATH_TO_RAW_DATA)
