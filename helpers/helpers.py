@@ -27,6 +27,12 @@ def zfy_board2sequence(board):
         sequence.append(zfy_findboard(board, i + 1))
     return sequence
 
+def zfy_data2board(data):
+    result = [[[0] for i in range(BOARD_SIZE)] for j in range(BOARD_SIZE)]
+    for i in data:
+        result[int(i // 19)][i % 19][0] = (not 0 == ((i & 1) - (len(data) & 1)))
+    return result
+
 def zfy_datasetwrite(FILE, sequence):
     if False == sequence: return None
     winner = int(len(sequence) & 1)
@@ -45,7 +51,7 @@ def zfy_draw(path, accfile):
     plt.plot(x, y)
     plt.xlabel('steps')
     plt.ylabel('accuracy')
-    plt.savefig(path + 'results.jpg')
+    plt.savefig(path + 'acc-{}.jpg'.format(int(time())))
     return None
 
 def zfy_expand(board_mini):
@@ -78,6 +84,28 @@ def zfy_findboard(board, step):
             result[1] = board[i].index(step)
     if ([0, 0] == result) and (not board[0][0] == step): return -1
     return result
+
+def zfy_getset(set_name):
+    if None == set_name:
+        raw = []
+        if FILE_NN_DATASET in listdir(PATH_TO_DATASET):
+            with open(PATH_TO_DATASET + FILE_NN_DATASET, 'r') as fin: raw = fin.read().split('\n')
+        if FILE_INTERATION_DATASET in listdir(PATH_TO_DATASET):
+            with open(PATH_TO_DATASET + FILE_INTERATION_DATASET, 'r') as fin: raw = raw + fin.read().split('\n')
+        if len(raw) < DATA_MIN:
+            with open(PATH_TO_DATASET + FILE_HUMAN_DATASET, 'r') as fin: raw = raw + fin.read().split('\n')
+        raw = zfy_random(raw)
+        #with open(PATH_TO_DATASET + FILE_TRAINSET, 'w') as fout:
+        #    for x in raw[:int(len(raw) * TRAINSET_RATIO)]:  fout.write(x + '\n')
+        for i in range(int(1//BATCH_RATIO)):
+            with open(PATH_TO_DATASET + FILE_TRAINSET + '-{}'.format(i), 'w') as fout:
+                for x in raw[int(i * len(raw) * BATCH_RATIO):int((i + 1) * len(raw) * BATCH_RATIO)]: fout.write(x + '\n')
+        with open(PATH_TO_DATASET + FILE_VALIDATIONSET, 'w') as fout:
+            for x in raw[int(len(raw) * TRAINSET_RATIO):]: fout.write(x + '\n')
+        return None
+    if 'train' == set_name[:5]: return zfy_txt2data(PATH_TO_DATASET + FILE_TRAINSET + '-{}'.format(set_name[5:]))
+    if 'validate' == set_name: return zfy_txt2data(PATH_TO_DATASET + FILE_VALIDATIONSET)
+    return None
 
 def zfy_isboard(board):
     for i in range(len(board)):

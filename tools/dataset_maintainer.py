@@ -50,14 +50,17 @@ def get_set(set_name):
         if FILE_INTERATION_DATASET in listdir(PATH_TO_DATASET):
             with open(PATH_TO_DATASET + FILE_INTERATION_DATASET, 'r') as fin: raw = raw + fin.read().split('\n')
         if len(raw) < DATA_MIN:
-            with open(PATH_TO_DATASET + FILE_HUMAN_DATASET) as fin: raw = raw + fin.read().split('\n')
+            with open(PATH_TO_DATASET + FILE_HUMAN_DATASET, 'r') as fin: raw = raw + fin.read().split('\n')
         raw = zfy_random(raw)
-        with open(PATH_TO_DATASET + FILE_TRAINSET, 'w') as fout:
-            for x in raw[:int(len(raw) * TRAINSET_RATIO)]:  fout.write(x + '\n')
+        #with open(PATH_TO_DATASET + FILE_TRAINSET, 'w') as fout:
+        #    for x in raw[:int(len(raw) * TRAINSET_RATIO)]:  fout.write(x + '\n')
+        for i in range(int(1//BATCH_RATIO)):
+            with open(PATH_TO_DATASET + FILE_TRAINSET + '-{}'.format(i), 'w') as fout:
+                for x in raw[int(i * len(raw) * BATCH_RATIO):int((i + 1) * len(raw) * BATCH_RATIO)]: fout.write(x + '\n')
         with open(PATH_TO_DATASET + FILE_VALIDATIONSET, 'w') as fout:
             for x in raw[int(len(raw) * TRAINSET_RATIO):]: fout.write(x + '\n')
         return None
-    if 'train' == set_name: return zfy_txt2data(PATH_TO_DATASET + FILE_TRAINSET)
+    if 'train' == set_name[:5]: return zfy_txt2data(PATH_TO_DATASET + FILE_TRAINSET + '-{}'.format(set_name[5:]))
     if 'validate' == set_name: return zfy_txt2data(PATH_TO_DATASET + FILE_VALIDATIONSET)
     return None
 

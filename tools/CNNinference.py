@@ -30,6 +30,7 @@ FC_SIZE = 512
 '''
 
 def inference(input_tensor, regularizer):
+    output = [0 for i in range(len(LAYERS))]
     layer = LAYERS[0]
     layer_type = layer[0]
     if 'conv' == layer_type:
@@ -41,7 +42,7 @@ def inference(input_tensor, regularizer):
                                            initializer = tf.truncated_normal_initializer(stddev = 0.1))
             conv_biases = tf.get_variable('bias', [conv_depth], initializer = tf.constant_initializer(0.1))
             result = tf.nn.conv2d(input_tensor, conv_weights, strides = conv_stride, padding = 'VALID')
-            output = tf.nn.relu(tf.nn.bias_add(result, conv_biases))
+            output[0] = tf.nn.relu(tf.nn.bias_add(result, conv_biases))
     if 'fc' == layer_type:
         shape = input_tensor.get_shape().as_list()
         nodes = shape[1] * shape[2] * shape[3]
@@ -54,7 +55,8 @@ def inference(input_tensor, regularizer):
                 tf.add_to_collection('losses', regularizer(fc_weights))
             fc_biases = tf.get_variable('biases', [fc_size],
                                         initializer = tf.constant_initializer(0.1))
-            output = tf.nn.relu(tf.matmul(reshaped, fc_weights) + fc_biases)
+            output[0] = tf.nn.relu(tf.matmul(reshaped, fc_weights) + fc_biases)
+
 
     for i in range(1, len(LAYERS)):
         layer = LAYERS[i]
@@ -68,11 +70,11 @@ def inference(input_tensor, regularizer):
                 conv_weights = tf.get_variable('weights', [conv_size, conv_size, conv_depth_pre, conv_depth],
                                                initializer = tf.truncated_normal_initializer(stddev = 0.1))
                 conv_biases = tf.get_variable('biases', [conv_depth], initializer = tf.constant_initializer(0.1))
-                result = tf.nn.conv2d(output, conv_weights, strides = conv_stride, padding = 'VALID')
-                output = tf.nn.relu(tf.nn.bias_add(result, conv_biases))
+                result = tf.nn.conv2d(output[i-1], conv_weights, strides = conv_stride, padding = 'VALID')
+                output[i] = tf.nn.relu(tf.nn.bias_add(result, conv_biases))
         if 'fc' == layer_type:
             print(output)
-            with tf.Session() as sess: print(sess.run(output))
+            with tf.Session() as sess: print(sess.run(output[i-1]))
             shape = output.get_shape().as_list()
             nodes = shape[1] * shape[2] * shape[3]
             reshaped = tf.reshape(output, [shape[0], nodes])
@@ -83,9 +85,9 @@ def inference(input_tensor, regularizer):
                 if not None == regularizer:
                     tf.add_to_collection('losses', regularizer(fc_weights))
                 fc_biases = tf.get_variable('weights', [fc_size], initializer = tf.constant_initializer(0.1))
-                output = tf.nn.relu(tf.matmul(output, fc_weights) + fc_biases)
+                output[i] = tf.nn.relu(tf.matmul(output[i-1], fc_weights) + fc_biases)
 
-    return output
+    return output[-1]
 
 '''
 def inference(input_tensor, train, regularizer):

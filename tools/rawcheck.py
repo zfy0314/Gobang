@@ -33,6 +33,7 @@ def check():
     dirs = listdir(PATH_TO_RAW_DATA)
     passed = []
     for x in dirs:
+        if not '.txt' == x[-4:]: continue
         print('start checking {}'.format(x))
         board = zfy_readtxt(PATH_TO_RAW_DATA + x)
         if zfy_isboard(board):

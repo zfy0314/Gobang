@@ -25,8 +25,8 @@ from setting import *
 HLAYERS = [512, 512, 512, 512, 512, 512]
 BATCH_SIZE_MIN = 50
 BATCH_RATIO = 0.002
-TRAINING_STEPS = 20000
-TRAINSET_RATIO = 0.8
+TRAINING_STEPS = 1
+TRAINSET_RATIO = 0.9
 CHECKPOINT_INTERVAL = 100
 
 LEARNING_RATE_BASE = 1.8
@@ -57,11 +57,10 @@ def inference(input_tensor, avg_class, weights):
 
 
 def train(name):
-    dataset = get_set('train')
     testset = get_set('validate')
-    DATA_NUM = len(dataset)
-    INPUT_NODE = len(dataset[0][0])
-    OUTPUT_NODE = len(dataset[0][1])
+    DATA_NUM = len(testset)
+    INPUT_NODE = len(testset[0][0])
+    OUTPUT_NODE = len(testset[0][1])
     LAYER = [INPUT_NODE] + HLAYERS + [OUTPUT_NODE]
     BATCH_SIZE = max(BATCH_SIZE_MIN, int(BATCH_RATIO*DATA_NUM))
 
@@ -105,14 +104,17 @@ def train(name):
         tf.global_variables_initializer().run()
         timer = zfy_timer('reset')
         for i in range(TRAINING_STEPS + 1):
-            start = int((i * BATCH_SIZE) % DATA_NUM)
-            end = int(min(start+BATCH_SIZE, DATA_NUM))
-            sess.run(train_op, feed_dict={x: [a[0] for a in dataset[start:end]], y_: [a[1] for a in dataset[start:end]]})
+            dataset = get_set('train{}'.format(i%int(1//BATCH_RATIO)))
+            print(dataset[0])
+            sess.run(train_op, feed_dict={x: [a[0] for a in dataset], y_: [a[1] for a in dataset]})
             if 0 == i % CHECKPOINT_INTERVAL:
                 validate_acc = sess.run(accuracy, feed_dict={x: [a[0] for a in testset], y_: [a[1] for a in testset]})
+                lss = sess.run(loss, feed_dict={x: [a[0] for a in dataset], y_: [a[1] for a in dataset]})
                 with open('models/{name}/{name}.acc'.format(name=name), 'a+') as fout:
                     fout.write('{}: {}\n'.format(i, validate_acc))
-                print('saving {} steps model, accuracy = {}, time used = {}'.format(i, validate_acc, zfy_timer(timer)))
+                with open('models/{name}/{name}.lss'.format(name=name), 'a+') as fout:
+                    fout.write('{}: {}\n'.format(i, lss))
+                print('saving {} steps model, accuracy = {}, loss = {}, time used = {}'.format(i, validate_acc, lss, zfy_timer(timer)))
                 #saver.save(sess, "models/{name}/{name}.ckpt-{stp}".format(name=name, stp=i))
                 timer = zfy_timer('reset')    
         
@@ -125,6 +127,7 @@ def train(name):
             next_step = 0
             steps = []
             while True:
+                #print(board)
                 bp_result = sess.run(y, feed_dict={x:[tuple(board)]}).tolist()
                 
                 #print(bp_result)
@@ -135,20 +138,27 @@ def train(name):
                         print(board[i * 19 + j], end=' ')
                     print('')
                 print(steps[-1])
-                next_step = [int(input('next_step_x: ')), int(input('next_step_y: '))]
-                if zfy_xy2linear(next_step) > 360: 
+                x = int(input('next_step_x: '))
+                if x > BOARD_SIZE:
                     del steps[-1]
+                    print('game ended')
                     break
+                y = int(input('next_step_y: '))
+                if y > BOARD_SIZE:
+                    del steps[-1]
+                    print('game ended')
+                    break
+                next_step = [x, y]
                 steps.append(next_step)
                 board[zfy_xy2linear(next_step)] = 2
-            x = [i[0] for i in steps]
-            y = [i[1] for i in steps]
+                x = [i[0] for i in steps]
+                y = [i[1] for i in steps]
             temp = zfy_sequence2board(steps)[min(x):max(x)+1][min(y):max(y)+1]
             boards = zfy_expand(temp)
             for brd in boards: autowrite(zfy_board2sequence(brd), 'interaction')
             print('saved into dataset')
     return None
-
+'''
 def get_result(name, input_tensor):
 
     x = tf.placeholder(tf.float32, [None, len(input_tensor)], name='x-input')
@@ -166,7 +176,9 @@ def get_result(name, input_tensor):
     with tf.Session() as sess:
         ckpt = tf.train.get_checkpoint_state("models/{name}/".format(name = name))
         saver.restore(sess, ckpt.model_checkpoint_path)
-
+    
+    return result
+'''
 def main(argv = None):
     
     timestamp = "BP" + str(int(time()))

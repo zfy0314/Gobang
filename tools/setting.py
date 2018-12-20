@@ -19,5 +19,6 @@ BOARD_SIZE = 19
 
 #--NN related------------------
 NETWORK_TYPE = 'BP'
-TRAINSET_RATIO = 0.8
+TRAINSET_RATIO = 0.98
 DATA_MIN = 1 << 20
+BATCH_RATIO = 0.002

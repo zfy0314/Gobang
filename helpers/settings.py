@@ -18,7 +18,6 @@ FILE_VALIDATIONSET = 'validation.data'
 BOARD_SIZE = 19
 
 #--NN related------------------
-NETWORK_TYPE = 'BP'
 TRAINSET_RATIO = 0.9
 DATA_MIN = 1 << 20
 BATCH_RATIO = 0.002

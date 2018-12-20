@@ -108,6 +108,7 @@ def dataset_init():
     if FILE_HUMAN_DATASET in listdir(PATH_TO_DATASET): system('rm ' + PATH_TO_DATASET + FILE_HUMAN_DATASET)
     dirs = listdir(PATH_TO_RAW_DATA)
     for x in dirs:
+        if not '.txt' == x[-4:]: continue
         timer = zfy_timer('reset')
         print('start processing {}.'.format(x))
         for sequence in [zfy_board2sequence(board) for board in zfy_expand(zfy_readtxt(PATH_TO_RAW_DATA + x))]:
