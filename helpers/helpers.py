@@ -43,6 +43,13 @@ def zfy_datasetwrite(FILE, sequence):
         with open(FILE, 'a+') as fout: fout.write(';' + str(zfy_xy2linear(sequence[i])) + '\n')
     return None
 
+def zfy_display(board):
+    for i in range(BOARD_SIZE):
+        for j in range(BOARD_SIZE):
+            print(board[i * BOARD_SIZE + j], end = ' ')
+        print('')
+    return None
+
 def zfy_draw(path, accfile):
     with open(path + accfile, 'r') as fin: accuracy_raw = fin.read().split('\n')
     accuracy = [[eval(x.split(': ')[0]), eval(x.split(': ')[1])] for x in accuracy_raw if not '' == x]
@@ -155,7 +162,7 @@ def zfy_readtxt(FILE):
 def zfy_sequence2board(sequence):
     board = [[0 for j in range(BOARD_SIZE)] for i in range(BOARD_SIZE)]
     for i in range(len(sequence)): board[sequence[i][0]][sequence[i][1]] = i + 1
-    return 
+    return board
     
 def zfy_set(name):
     if 'train' == name:

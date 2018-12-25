@@ -13,6 +13,10 @@ FILE_NN_DATASET = 'nn.data'
 FILE_INTERATION_DATASET = 'interact.data'
 FILE_TRAINSET = 'train.data'
 FILE_VALIDATIONSET = 'validation.data'
+FILE_BP_LOSS = 'BP.lss'
+FILE_BP_ACCURACY = 'BP.acc'
+FILE_CNN_LOSS = 'CNN.lss'
+FILE_CNN_ACCURACY = 'CNN.acc'
 
 #--game related----------------
 BOARD_SIZE = 19

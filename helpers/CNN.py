@@ -14,7 +14,7 @@ NUM_LABELS = OUTPUT_NODE
 
 CONV1_DEEP = 16
 CONV1_SIZE = 3
-CONV2_DEEP = 32
+CONV2_DEEP = 24
 CONV2_SIZE = 3
 CONV3_DEEP = 32
 CONV3_SIZE = 3
@@ -23,10 +23,10 @@ FC_SIZE = 512
 BATCH_RATIO = 0.002
 TRAINING_STEPS = 100000
 CHECKPOINT_INTERVAL = 100
-SAVER_INTERVAL = 300
+SAVER_INTERVAL = 20
 
-LEARNING_RATE_BASE = 6.0
-LEARNING_RATE_DECAY =  0.9999
+LEARNING_RATE_BASE = 1.8
+LEARNING_RATE_DECAY =  0.997
 REGULARIZATION_RATE = 0.0001
 MOVING_AVERAGE_DECAY = 0.99
 
@@ -65,13 +65,21 @@ def inference(input_tensor, regularizer):
         fc1_biases = tf.get_variable('bias', [FC_SIZE], initializer = tf.constant_initializer(0.1))
         fc1 = tf.nn.relu(tf.matmul(reshaped, fc1_weights) + fc1_biases)
 
+    with tf.variable_scope('layer6-fc3'):
+        fc3_weights = tf.get_variable('weight', [FC_SIZE, FC_SIZE],
+                                      initializer = tf.truncated_normal_initializer(stddev = 0.1))
+        if not None == regularizer:
+            tf.add_to_collection('losses', regularizer(fc3_weights))
+        fc3_biases = tf.get_variable('bias', [FC_SIZE], initializer = tf.constant_initializer(0.1))
+        fc3 = tf.nn.relu(tf.matmul(fc1, fc3_weights) + fc3_biases)
+
     with tf.variable_scope('layer5-fc2'):
         fc2_weights = tf.get_variable('weight', [FC_SIZE, OUTPUT_NODE],
                                       initializer = tf.truncated_normal_initializer(stddev = 0.1))
         if not None == regularizer:
             tf.add_to_collection('losses', regularizer(fc2_weights))
         fc2_biases = tf.get_variable('bias', [OUTPUT_NODE], initializer = tf.constant_initializer(0.1))
-        output = tf.nn.relu(tf.matmul(fc1, fc2_weights) + fc2_biases)
+        output = tf.nn.relu(tf.matmul(fc3, fc2_weights) + fc2_biases)
 
     return output
 
@@ -107,15 +115,15 @@ def train(name):
             _, loss_value, step = sess.run([train_op, loss, global_step], feed_dict = train_feed)
             print('step {}: loss = {}, time used {} seconds'.format(i, loss_value, zfy_timer(timer)))
             timer = zfy_timer('reset')
-            with open('model.lss', 'a+') as fout:
-                fout.write('{}: {}'.format(i, loss_value))
+            with open(PATH_TO_MODELS_CNN + FILE_CNN_LOSS, 'a+') as fout:
+                fout.write('{}: {}\n'.format(i, loss_value))
             #if 0 == i % CHECKPOINT_INTERVAL:
                 #print(evaluate(True))
             if 0 == i % SAVER_INTERVAL:
-                saver.save(sess, PATH_TO_MODELS + name + '.ckpt', global_step = step)
+                saver.save(sess, PATH_TO_MODELS_CNN + name + '.ckpt', global_step = step)
                 acc = evaluate()
                 print('step {}: accuracy = {}'.format(i, acc))
-                with open('model.acc', 'a+') as fout:
+                with open(PATH_TO_MODELS_CNN + FILE_CNN_ACCURACY, 'a+') as fout:
                     fout.write('{}: {}\n'.format(i, acc))
                 
     return None
@@ -135,7 +143,7 @@ def evaluate():
         with tf.Session() as sess:
             testset = zfy_getset('validate')
             test_feed = {x: [zfy_data2board(data[0]) for data in testset], y_: [data[1] for data in testset]}
-            ckpt = tf.train.get_checkpoint_state(PATH_TO_MODELS)
+            ckpt = tf.train.get_checkpoint_state(PATH_TO_MODELS_CNN)
             saver.restore(sess, ckpt.model_checkpoint_path)
             global_step = ckpt.model_checkpoint_path.split('-')[-1]
             score = sess.run(accuracy, feed_dict = test_feed)
@@ -151,7 +159,7 @@ def play(board):
         saver = tf.train.Saver(variables_to_restore)
 
         with tf.Session() as sess:
-            ckpt = tf.train.get_checkpoint_state(PATH_TO_MODELS)
+            ckpt = tf.train.get_checkpoint_state(PATH_TO_MODELS_CNN)
             saver.restore(sess, ckpt.model_checkpoint_path)
             result = sess.run(prediction, feed_dict = {x: [board]})
     return result

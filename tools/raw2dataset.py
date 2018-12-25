@@ -70,7 +70,6 @@ def zfy_linear2xy(index):
     return [index // BOARD_SIZE, index % BOARD_SIZE]
 
 def zfy_datasetwrite(FILE, sequence):
-    if False == sequence: return None
     winner = int(len(sequence) & 1)
     for i in range(len(sequence)):
         if (int(i & 1) == winner): continue

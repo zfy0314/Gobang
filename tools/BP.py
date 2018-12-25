@@ -25,9 +25,9 @@ from setting import *
 HLAYERS = [512, 512, 512, 512, 512, 512]
 BATCH_SIZE_MIN = 50
 BATCH_RATIO = 0.002
-TRAINING_STEPS = 1
+TRAINING_STEPS = 10
 TRAINSET_RATIO = 0.9
-CHECKPOINT_INTERVAL = 100
+CHECKPOINT_INTERVAL = 10
 
 LEARNING_RATE_BASE = 1.8
 LEARNING_RATE_DECAY =  0.993
@@ -69,8 +69,8 @@ def train(name):
 
     weights  = [[], []]
     for i in range(len(LAYER) - 1):
-         weights[0].append(tf.Variable(tf.truncated_normal([LAYER[i], LAYER[i+1]], stddev=0.1)))
-         weights[1].append(tf.Variable(tf.constant(1.0, shape=[LAYER[i+1]])))
+         weights[0].append(tf.Variable(tf.truncated_normal([LAYER[i], LAYER[i+1]], stddev=0.1), name = 'weigths{}'.format(i)))
+         weights[1].append(tf.Variable(tf.constant(1.0, shape=[LAYER[i+1]]), name = 'biases{}'.format(i)))
     
     global_step = tf.Variable(0, trainable=False)
 
@@ -105,8 +105,9 @@ def train(name):
         timer = zfy_timer('reset')
         for i in range(TRAINING_STEPS + 1):
             dataset = get_set('train{}'.format(i%int(1//BATCH_RATIO)))
-            print(dataset[0])
+            #print(dataset[0])
             sess.run(train_op, feed_dict={x: [a[0] for a in dataset], y_: [a[1] for a in dataset]})
+            print('step {}: loss = {}'.format(i, sess.run(loss, feed_dict={x: [a[0] for a in dataset], y_: [a[1] for a in dataset]})))
             if 0 == i % CHECKPOINT_INTERVAL:
                 validate_acc = sess.run(accuracy, feed_dict={x: [a[0] for a in testset], y_: [a[1] for a in testset]})
                 lss = sess.run(loss, feed_dict={x: [a[0] for a in dataset], y_: [a[1] for a in dataset]})
@@ -120,14 +121,15 @@ def train(name):
         
 
         saver.save(sess, "models/{name}/{name}.ckpt-{stp}".format(name=name, stp=TRAINING_STEPS))
-
+        
         while True:
             print('new game started')
             board = [0 for i in range(BOARD_SIZE ** 2)]
-            next_step = 0
+            next_step = [0, 0]
             steps = []
-            while True:
-                #print(board)
+            flag = True
+            
+            while flag:
                 bp_result = sess.run(y, feed_dict={x:[tuple(board)]}).tolist()
                 
                 #print(bp_result)
@@ -138,25 +140,31 @@ def train(name):
                         print(board[i * 19 + j], end=' ')
                     print('')
                 print(steps[-1])
-                x = int(input('next_step_x: '))
-                if x > BOARD_SIZE:
+                next_step = [int(input('next_step_x: ')), int(input('next_step_y: '))]
+                if next_step > [19, 19]: 
                     del steps[-1]
-                    print('game ended')
-                    break
-                y = int(input('next_step_y: '))
-                if y > BOARD_SIZE:
-                    del steps[-1]
-                    print('game ended')
-                    break
-                next_step = [x, y]
+                    print('game end')
+                    flag = False
+                    continue
                 steps.append(next_step)
                 board[zfy_xy2linear(next_step)] = 2
-                x = [i[0] for i in steps]
-                y = [i[1] for i in steps]
-            temp = zfy_sequence2board(steps)[min(x):max(x)+1][min(y):max(y)+1]
+            x1 = [i[0] for i in steps]
+            y1 = [i[1] for i in steps]
+            print(steps)
+            print(next_step)
+            print(zfy_sequence2board(steps))
+            print(x1)
+            print(y1)
+            print(min(x1))
+            print(min(y1))
+            print(max(x1))
+            print(max(y1))
+            temp = zfy_sequence2board(steps)[min(x1):max(x1)+1][min(y1):max(y1)+1]
+            print(temp)
             boards = zfy_expand(temp)
             for brd in boards: autowrite(zfy_board2sequence(brd), 'interaction')
             print('saved into dataset')
+        
     return None
 '''
 def get_result(name, input_tensor):
@@ -164,15 +172,19 @@ def get_result(name, input_tensor):
     x = tf.placeholder(tf.float32, [None, len(input_tensor)], name='x-input')
     y_ = tf.placeholder(tf.float32, [None, len(input_tensor)], name='y-input')
 
+    INPUT_NODE = len(input_tensor)
+    OUTPUT_NODE = INPUT_NODE
+    LAYER = [INPUT_NODE] + HLAYERS + [OUTPUT_NODE]
+
     weights  = [[], []]
     for i in range(len(LAYER) - 1):
-         weights[0].append(tf.Variable(tf.truncated_normal([LAYER[i], LAYER[i+1]], stddev=0.1)))
-         weights[1].append(tf.Variable(tf.constant(1.0, shape=[LAYER[i+1]])))
+         weights[0].append(tf.Variable(tf.truncated_normal([LAYER[i], LAYER[i+1]], stddev=0.1), name = 'weigths{}'.format(i)))
+         weights[1].append(tf.Variable(tf.constant(1.0, shape=[LAYER[i+1]]), name = 'biases{}'.format(i)))
     
     y = inference(x, None, weights)
     result = tf.argmax(y, 1)
 
-    saver = tf.train.Saver(varaibles_to_restore)
+    saver = tf.train.Saver()
     with tf.Session() as sess:
         ckpt = tf.train.get_checkpoint_state("models/{name}/".format(name = name))
         saver.restore(sess, ckpt.model_checkpoint_path)
@@ -188,7 +200,11 @@ def main(argv = None):
             HLAYERS, BATCH_SIZE_MIN, BATCH_RATIO, TRAINING_STEPS, TRAINSET_RATIO, LEARNING_RATE_BASE, LEARNING_RATE_DECAY, REGULARIZATION_RATE, MOVING_AVERAGE_DECAY))
     print('models path created')
     train(timestamp)
-    
+
+    board = [0 for i in range(361)]
+    print(get_result(timestamp, board))
+
+    return None
     
 
 if __name__ == '__main__':
