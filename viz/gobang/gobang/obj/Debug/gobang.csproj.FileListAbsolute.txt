@@ -1,0 +1,10 @@
+C:\Users\Administrator\Documents\gobang\gobang\bin\Debug\gobang.exe.config
+C:\Users\Administrator\Documents\gobang\gobang\bin\Debug\gobang.exe
+C:\Users\Administrator\Documents\gobang\gobang\bin\Debug\gobang.pdb
+C:\Users\Administrator\Documents\gobang\gobang\obj\Debug\gobang.csprojAssemblyReference.cache
+C:\Users\Administrator\Documents\gobang\gobang\obj\Debug\gobang.Form1.resources
+C:\Users\Administrator\Documents\gobang\gobang\obj\Debug\gobang.Properties.Resources.resources
+C:\Users\Administrator\Documents\gobang\gobang\obj\Debug\gobang.csproj.GenerateResource.cache
+C:\Users\Administrator\Documents\gobang\gobang\obj\Debug\gobang.csproj.CoreCompileInputs.cache
+C:\Users\Administrator\Documents\gobang\gobang\obj\Debug\gobang.exe
+C:\Users\Administrator\Documents\gobang\gobang\obj\Debug\gobang.pdb
